@@ -1,5 +1,7 @@
 package ru.amm.vsu;
 
+import ru.amm.vsu.fishes.Fish;
+
 import java.util.*;
 
 public class Store {
@@ -9,11 +11,15 @@ public class Store {
     private int money;
 
     private List<Box> shelf = new ArrayList<>();
-    private Map<Class, Float> discount = new HashMap<>();
+    private Map<Class<? extends Fish>, Float> discount = new HashMap<>();
 
     public Store(String name, int money) {
         this.name = name;
         this.money = money;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public int getMoney() {
@@ -24,13 +30,13 @@ public class Store {
         return shelf;
     }
 
-    public Map<Class, Float> getDiscount() {
+    public Map<Class<? extends Fish>, Float> getDiscount() {
         return discount;
     }
 
-    public Box sell(Class fish, int count) {
-        shelf.removeIf(b -> !b.getFish().isFresh());
-        if (count <= 0 || shelf.stream().mapToInt(b -> (b.getFish().getClass() == fish) ? b.getCount() : 0).sum() < count) {
+    public Box sell(Class<? extends Fish> fish, int count) {
+        throwAwayRottenFish();
+        if (count <= 0 || fishesAvailable(fish) < count) {
             throw new IllegalArgumentException(name + " cannot sell " + count + " " + fish.getSimpleName());
         }
 
@@ -75,5 +81,13 @@ public class Store {
         shelf.addAll(Arrays.asList(boxes));
         money -= costs;
         return costs;
+    }
+
+    private void throwAwayRottenFish() {
+        shelf.removeIf(b -> !b.getFish().isFresh());
+    }
+
+    private int fishesAvailable(Class<? extends Fish> fish) {
+        return shelf.stream().mapToInt(b -> (b.getFish().getClass() == fish) ? b.getCount() : 0).sum();
     }
 }
