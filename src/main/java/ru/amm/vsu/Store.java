@@ -83,6 +83,16 @@ public class Store {
         return costs;
     }
 
+    public int buy(Order order) {
+        if (money < order.getPrice()) {
+            throw new IllegalArgumentException(name + " is missing " + (order.getPrice() - money) + " money for the deal");
+        }
+
+        shelf.addAll(order.getBoxes());
+        money -= order.getPrice();
+        return order.getPrice();
+    }
+
     private void throwAwayRottenFish() {
         shelf.removeIf(b -> !b.getFish().isFresh());
     }

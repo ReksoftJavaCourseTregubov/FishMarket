@@ -33,6 +33,25 @@ public class FishStoreTest {
     }
 
     @Test
+    public void buyFishOrderBuilder() {
+        final int SALMON_COUNT = 10;
+        final int ROACH_COUNT = 15;
+
+        int correctCosts = new Salmon().getPrice() * SALMON_COUNT
+                + new Salmon().getPrice() * SALMON_COUNT
+                + new Roach().getPrice() * ROACH_COUNT;
+
+        Box anotherBoxOfSalmons = new Box(new Salmon(), SALMON_COUNT);
+        int actualCosts = luckyFisher.buy(new OrderBuilder()
+                .add(anotherBoxOfSalmons)
+                .add(new Box(new Roach(), ROACH_COUNT))
+                .add(new Salmon(), SALMON_COUNT)
+                .build());
+
+        assertEquals(correctCosts, actualCosts, "Costs not correct");
+    }
+
+    @Test
     public void buyFishMoneyDeduct() {
         final int SALMON_COUNT = 10;
         final int ROACH_COUNT = 15;
