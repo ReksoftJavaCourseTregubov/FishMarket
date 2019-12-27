@@ -37,9 +37,7 @@ public class FishStoreTest {
         final int SALMON_COUNT = 10;
         final int ROACH_COUNT = 15;
 
-        int correctCosts = new Salmon().getPrice() * SALMON_COUNT
-                + new Salmon().getPrice() * SALMON_COUNT
-                + new Roach().getPrice() * ROACH_COUNT;
+        int correctCosts = Salmon.PRICE * SALMON_COUNT + Salmon.PRICE * SALMON_COUNT + Roach.PRICE * ROACH_COUNT;
 
         Box anotherBoxOfSalmons = new Box(new Salmon(), SALMON_COUNT);
         int actualCosts = luckyFisher.buy(new OrderBuilder()
@@ -57,7 +55,7 @@ public class FishStoreTest {
         final int ROACH_COUNT = 15;
 
         int moneyBeforeDeal = luckyFisher.getMoney();
-        int costs = new Salmon().getPrice() * SALMON_COUNT + new Roach().getPrice() * ROACH_COUNT;
+        int costs = Salmon.PRICE * SALMON_COUNT + Roach.PRICE * ROACH_COUNT;
 
         luckyFisher.buy(new Box(new Salmon(), SALMON_COUNT), new Box(new Roach(), ROACH_COUNT));
         assertEquals(moneyBeforeDeal - costs, luckyFisher.getMoney(), "Costs should be deducted");
@@ -79,7 +77,7 @@ public class FishStoreTest {
         final int SALMON_COUNT = 10;
         final int ROACH_COUNT = 15;
 
-        int costs = new Salmon().getPrice() * SALMON_COUNT + new Roach().getPrice() * ROACH_COUNT;
+        int costs = Salmon.PRICE * SALMON_COUNT + Roach.PRICE * ROACH_COUNT;
 
         luckyFisher.buy(new Box(new Salmon(), SALMON_COUNT), new Box(new Roach(), ROACH_COUNT));
         assertEquals(costs, luckyFisher.buy(new Box(new Salmon(), SALMON_COUNT), new Box(new Roach(), ROACH_COUNT)), "Costs should be returned");
@@ -100,7 +98,7 @@ public class FishStoreTest {
         final int SALMON_COUNT = 5;
 
         int moneyBeforeDeal = luckyFisher.getMoney();
-        int price = new Salmon().getPrice() * SALMON_COUNT;
+        int price = Salmon.PRICE * SALMON_COUNT;
 
         luckyFisher.sell(Salmon.class, SALMON_COUNT);
         assertEquals(moneyBeforeDeal + price, luckyFisher.getMoney(), "Money should be paid");
@@ -168,7 +166,7 @@ public class FishStoreTest {
         final float DISCOUNT = 0.7f;
         fishParadise.buy(new Box(new Herring(), HERRING_COUNT * 2));
 
-        int price = new Herring().getPrice() * HERRING_COUNT;
+        int price = Herring.PRICE * HERRING_COUNT;
         int moneyBeforeDeal = fishParadise.getMoney();
 
         fishParadise.sell(Herring.class, HERRING_COUNT);

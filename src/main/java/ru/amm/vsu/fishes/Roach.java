@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.util.Date;
 
 public class Roach extends Fish {
+    public static final int PRICE = 50;
     private static final int DAYS_COUNT = 5;
 
     private Date shelfLife;
@@ -17,7 +18,7 @@ public class Roach extends Fish {
 
     @Override
     public int getPrice() {
-        return 50;
+        return PRICE;
     }
 
     @Override
