@@ -10,7 +10,7 @@ public class Store {
     private String name;
     private int money;
 
-    private List<Box> shelf = new ArrayList<>();
+    private Map<Class<? extends Fish>, List<Box>> shelf = new HashMap<>();
     private Map<Class<? extends Fish>, Float> discount = new HashMap<>();
 
     public Store(String name, int money) {
@@ -26,7 +26,7 @@ public class Store {
         return money;
     }
 
-    public List<Box> getShelf() {
+    public Map<Class<? extends Fish>, List<Box>> getShelf() {
         return shelf;
     }
 
@@ -35,38 +35,45 @@ public class Store {
     }
 
     public Box sell(Class<? extends Fish> fish, int count) {
-        throwAwayRottenFish();
-        if (count <= 0 || fishesAvailable(fish) < count) {
-            throw new IllegalArgumentException(name + " cannot sell " + count + " " + fish.getSimpleName());
+        throwAwayRottenFish(fish);
+        if (count <= 0) {
+            throw new IllegalArgumentException("You try to by nothing");
+        }
+
+        if (!shelf.containsKey(fish)) {
+            throw new IllegalArgumentException("There is no" + fish + "in the store");
         }
 
         Box purchase = new Box();
         purchase.setCount(count);
 
-        List<Box> boxesForSale = new ArrayList<>();
+        int emptyBoxesCount = 0;
+        int needToSaleCount = count;
 
-        for (Box b : shelf) {
-            if (count > 0) {
-                if (b.getFish().getClass() == fish) {
-                    // If you put old fish in a box with fresh fish,
-                    // they will go rot at the same time
-                    if (purchase.getFish() == null || purchase.getFish().getShelfLife().before(b.getFish().getShelfLife())) {
-                        purchase.setFish(b.getFish());
-                    }
-                    if (count >= b.getCount()) {
-                        count -= b.getCount();
-                        boxesForSale.add(b);
-                    } else {
-                        b.setCount(b.getCount() - count);
-                        break;
-                    }
-                }
+        for (Box b : shelf.get(fish)) {
+            // If you put old fish in a box with fresh fish,
+            // they will go rot at the same time
+            if (purchase.getFish() == null || purchase.getFish().getShelfLife().before(b.getFish().getShelfLife())) {
+                purchase.setFish(b.getFish());
+            }
+
+            if (needToSaleCount >= b.getCount()) {
+                needToSaleCount -= b.getCount();
+                emptyBoxesCount++;
             } else {
+                b.setCount(b.getCount() - needToSaleCount);
+                needToSaleCount = 0;
                 break;
             }
         }
 
-        shelf.removeAll(boxesForSale);
+        if (needToSaleCount > 0) {
+            throw new IllegalArgumentException(name + " cannot sell " + count + " " + fish.getSimpleName());
+        }
+
+        if (emptyBoxesCount > 0) {
+            shelf.put(fish, shelf.get(fish).subList(emptyBoxesCount, shelf.get(fish).size()));
+        }
 
         money += purchase.getFish().getPrice() * purchase.getCount() * discount.getOrDefault(purchase.getFish().getClass(), DEFAULT_DISCOUNT);
         return purchase;
@@ -74,30 +81,35 @@ public class Store {
 
     public int buy(Box... boxes) {
         int costs = Arrays.stream(boxes).mapToInt(b -> b.getFish().getPrice() * b.getCount()).sum();
-        if (money < costs) {
-            throw new IllegalArgumentException(name + " is missing " + (costs - money) + " money for the deal");
-        }
-
-        shelf.addAll(Arrays.asList(boxes));
-        money -= costs;
-        return costs;
+        return buy(Arrays.asList(boxes), costs);
     }
 
     public int buy(Order order) {
-        if (money < order.getPrice()) {
-            throw new IllegalArgumentException(name + " is missing " + (order.getPrice() - money) + " money for the deal");
+        return buy(order.getBoxes(), order.getPrice());
+    }
+
+    private int buy(List<Box> boxes, int price) {
+        if (money < price) {
+            throw new IllegalArgumentException(name + " is missing " + (price - money) + " money for the deal");
         }
 
-        shelf.addAll(order.getBoxes());
-        money -= order.getPrice();
-        return order.getPrice();
+        for (Box b : boxes) {
+            if (shelf.containsKey(b.getFish().getClass())) {
+                shelf.get(b.getFish().getClass()).add(b);
+            } else {
+                List<Box> newSubShelf = new ArrayList<>();
+                shelf.put(b.getFish().getClass(), newSubShelf);
+                newSubShelf.add(b);
+            }
+        }
+
+        money -= price;
+        return price;
     }
 
-    private void throwAwayRottenFish() {
-        shelf.removeIf(b -> !b.getFish().isFresh());
-    }
-
-    private int fishesAvailable(Class<? extends Fish> fish) {
-        return shelf.stream().mapToInt(b -> (b.getFish().getClass() == fish) ? b.getCount() : 0).sum();
+    private void throwAwayRottenFish(Class<? extends Fish> fish) {
+        if (shelf.containsKey(fish)) {
+            shelf.get(fish).removeIf(b -> !b.getFish().isFresh());
+        }
     }
 }

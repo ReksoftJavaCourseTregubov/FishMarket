@@ -7,6 +7,8 @@ import ru.amm.vsu.fishes.Herring;
 import ru.amm.vsu.fishes.Roach;
 import ru.amm.vsu.fishes.Salmon;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FishStoreTest {
@@ -66,10 +68,10 @@ public class FishStoreTest {
         final int SALMON_COUNT = 10;
         final int ROACH_COUNT = 15;
 
-        int sizeBefore = luckyFisher.getShelf().size();
+        int sizeBefore = luckyFisher.getShelf().values().stream().mapToInt(List::size).sum();
 
         luckyFisher.buy(new Box(new Salmon(), SALMON_COUNT), new Box(new Roach(), ROACH_COUNT));
-        assertEquals(sizeBefore + 2, luckyFisher.getShelf().size(), "Boxes should be in the shelf");
+        assertEquals(sizeBefore + 2, luckyFisher.getShelf().values().stream().mapToInt(List::size).sum(), "Boxes should be in the shelf");
     }
 
     @Test
@@ -109,24 +111,22 @@ public class FishStoreTest {
         final int SALMON_COUNT = 5;
         luckyFisher.buy(new Box(new Salmon(), SALMON_COUNT), new Box(new Salmon(), SALMON_COUNT));
 
-        int sizeBefore = luckyFisher.getShelf().size();
-        Box firstSalmonBox = luckyFisher.getShelf().stream()
-                .filter(b -> b.getFish().getClass().equals(Salmon.class))
+        int sizeBefore = luckyFisher.getShelf().get(Salmon.class).size();
+        Box firstSalmonBox = luckyFisher.getShelf().get(Salmon.class).stream()
                 .findFirst()
                 .get();
 
         luckyFisher.sell(Salmon.class, firstSalmonBox.getCount() - 1);
-        assertEquals(sizeBefore, luckyFisher.getShelf().size(), "Shelf size should not change");
+        assertEquals(sizeBefore, luckyFisher.getShelf().get(Salmon.class).size(), "Shelf size should not change");
         assertEquals(1, firstSalmonBox.getCount(), "There should be one fish in the first salmon box");
 
-        sizeBefore = luckyFisher.getShelf().size();
-        firstSalmonBox = luckyFisher.getShelf().stream()
-                .filter(b -> b.getFish().getClass().equals(Salmon.class))
+        sizeBefore = luckyFisher.getShelf().get(Salmon.class).size();
+        firstSalmonBox = luckyFisher.getShelf().get(Salmon.class).stream()
                 .findFirst()
                 .get();
 
         luckyFisher.sell(Salmon.class, firstSalmonBox.getCount());
-        assertEquals(sizeBefore - 1, luckyFisher.getShelf().size(), "Shelf size decrease by 1");
+        assertEquals(sizeBefore - 1, luckyFisher.getShelf().get(Salmon.class).size(), "Shelf size decrease by 1");
     }
 
     @Test
